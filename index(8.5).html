@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>TechVal Pro</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f4f3ff;color:#111827;}
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-thumb{background:#c4b5fd;border-radius:4px;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fi{animation:fadeIn .3s ease;}
+header{background:#1a1a2e;padding:10px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.logo{background:#7c3aed;width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.logo-title{color:white;font-size:17px;font-weight:600;}
+.logo-sub{color:#a78bfa;font-size:11px;}
+.api-box{margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.api-input-wrap{background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.3);border-radius:8px;display:flex;align-items:center;gap:6px;padding:6px 12px;}
+.api-input-wrap span{color:#c4b5fd;font-size:11px;}
+.api-input-wrap input{background:transparent;border:none;outline:none;color:white;font-size:11px;width:155px;}
+.api-input-wrap button{background:none;border:none;cursor:pointer;color:#a78bfa;font-size:13px;}
+.api-link{color:#a78bfa;font-size:11px;text-decoration:none;}
+.tabs-bar{background:#f8f7ff;border-bottom:1px solid #e5e2fb;}
+.tabs-scroll{display:flex;overflow-x:auto;scrollbar-width:none;}
+.tabs-scroll::-webkit-scrollbar{display:none;}
+.tab-btn{padding:12px 18px;font-size:13px;font-weight:500;white-space:nowrap;background:transparent;border:none;border-bottom:2px solid transparent;color:#6b7280;cursor:pointer;transition:all .15s;}
+.tab-btn.active{color:#7c3aed;border-bottom-color:#7c3aed;background:white;}
+.tab-desc{background:#faf8ff;border-top:1px solid #ede9fe;padding:7px 18px;font-size:12px;}
+.tab-desc b{color:#7c3aed;}
+.main{max-width:1200px;margin:0 auto;padding:14px 12px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media(max-width:700px){.grid2{grid-template-columns:1fr;}}
+.card{background:white;border:1px solid #e5e7eb;border-radius:12px;padding:18px;}
+.card-title{font-size:13px;font-weight:700;color:#374151;display:flex;align-items:center;gap:7px;margin-bottom:12px;}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex-shrink:0;}
+label.lbl{font-size:11px;font-weight:500;color:#6b7280;display:flex;align-items:center;margin-bottom:4px;}
+.inp{width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:8px;background:#fafafa;font-size:13px;color:#111827;outline:none;transition:border-color .15s,box-shadow .15s;}
+.inp:focus{border-color:#7c3aed;box-shadow:0 0 0 3px #ede9fe;background:#fff;}
+.inp-wrap{margin-bottom:11px;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 14px;}
+select.inp{cursor:pointer;}
+.sector-hint{font-size:11px;color:#9ca3af;margin-top:4px;}
+.tip-wrap{position:relative;display:inline-block;margin-left:4px;}
+.tip-icon{color:#a78bfa;cursor:help;font-size:12px;font-style:normal;}
+.tip-box{display:none;position:absolute;left:0;top:18px;background:#1a1a2e;color:#e9d5ff;border-radius:6px;padding:5px 10px;font-size:11px;white-space:nowrap;z-index:99;box-shadow:0 4px 12px rgba(0,0,0,.25);min-width:180px;line-height:1.5;font-weight:400;}
+.tip-wrap:hover .tip-box{display:block;}
+.btn-primary{width:100%;background:linear-gradient(135deg,#7c3aed,#5b21b6);border:none;border-radius:10px;color:white;padding:11px 0;font-size:14px;font-weight:700;cursor:pointer;margin-top:6px;box-shadow:0 4px 14px rgba(124,58,237,.3);}
+.btn-primary:hover{opacity:.92;}
+.btn-outline{background:white;border:1px solid #c4b5fd;color:#7c3aed;border-radius:7px;padding:6px 0;font-size:12px;cursor:pointer;font-weight:500;width:100%;}
+.btn-outline:hover{background:#f5f3ff;}
+.btn-purple{background:#7c3aed;border:none;color:white;border-radius:7px;padding:8px 0;font-size:12px;font-weight:600;cursor:pointer;width:100%;margin-top:8px;}
+.btn-purple:disabled{background:#9ca3af;cursor:not-allowed;}
+.btn-report{background:linear-gradient(135deg,#7c3aed,#5b21b6);border:none;color:white;padding:7px 16px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;box-shadow:0 3px 10px rgba(124,58,237,.3);}
+.btn-report:disabled{background:#9ca3af;box-shadow:none;cursor:not-allowed;}
+.btn-close{background:#f8f7ff;border:1px solid #e5e7eb;color:#6b7280;border-radius:6px;padding:4px 11px;cursor:pointer;font-size:11px;font-weight:500;}
+.btn-toggle{padding:5px 13px;font-weight:600;font-size:11px;border:none;cursor:pointer;}
+.drop-zone{border:2px dashed #c4b5fd;background:#faf8ff;border-radius:10px;padding:20px 14px;text-align:center;cursor:pointer;}
+.drop-zone.drag{border-color:#7c3aed;background:#ede9fe;}
+.drop-icon{width:34px;height:34px;background:#ede9fe;border-radius:50%;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;}
+.status-ok{margin-top:10px;padding:8px 11px;border-radius:8px;font-size:12px;background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;}
+.status-err{margin-top:10px;padding:8px 11px;border-radius:8px;font-size:12px;background:#fef9ec;border:1px solid #fde68a;color:#92400e;}
+.preview-box{margin-top:10px;background:#ede9fe;border:1px solid #c4b5fd;border-radius:8px;padding:9px 10px;font-size:10px;line-height:1.6;overflow-x:auto;max-height:80px;overflow-y:auto;}
+.csv-tpl{font-size:10px;color:#7c3aed;background:#ede9fe;padding:5px 8px;border-radius:5px;font-family:monospace;line-height:1.8;margin-bottom:7px;}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:14px;}
+.stat-card{background:#faf8ff;border:1px solid #ede9fe;border-radius:10px;padding:12px 14px;}
+.stat-label{font-size:11px;color:#6b7280;margin-bottom:3px;}
+.stat-val{font-size:20px;font-weight:700;line-height:1;margin-bottom:2px;}
+.stat-sub{font-size:11px;color:#9ca3af;}
+.chart-wrap{background:#faf8ff;border-radius:10px;padding:14px;}
+.chart-label{font-size:11px;font-weight:500;color:#6b7280;margin-bottom:8px;}
+.toggle-group{display:flex;background:#f8f7ff;border:1px solid #e5e2fb;border-radius:8px;overflow:hidden;}
+.span-full{grid-column:1/-1;}
+.profile-section{border-top:1px solid #f3f4f6;margin-top:14px;padding-top:12px;}
+.report-card{background:white;border:2px solid #7c3aed;border-radius:12px;padding:20px;}
+.report-card.err{border-color:#fca5a5;}
+.report-title{color:#7c3aed;font-size:13px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;}
+.report-body{font-size:13px;line-height:1.9;color:#374151;}
+canvas{display:block;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <svg width="17" height="17" viewBox="0 0 18 18" fill="none"><path d="M9 2L16.5 15.5H1.5Z" fill="white" opacity=".9"/></svg>
+  </div>
+  <div>
+    <div class="logo-title">TechVal Pro</div>
+    <div class="logo-sub">Tech Company Valuation · M&amp;A Analytics</div>
+  </div>
+  <div class="api-box">
+    <div class="api-input-wrap">
+      <span>Claude API Key:</span>
+      <input type="password" id="apiKey" placeholder="sk-ant-..."/>
+      <button onclick="toggleKey()" id="keyToggle">👁</button>
+    </div>
+    <a href="https://console.anthropic.com" target="_blank" class="api-link">Uzyskaj klucz</a>
+  </div>
+</header>
+
+<div class="tabs-bar">
+  <div class="tabs-scroll" id="tabsRow"></div>
+  <div class="tab-desc" id="tabDesc"></div>
+</div>
+
+<div class="main">
+  <div class="grid2" id="appGrid">
+    <div class="card" id="formCard">
+      <div class="card-title">
+        <span class="dot" style="background:#7c3aed"></span>Dane finansowe
+        <span id="modelBadge" style="background:#ede9fe;color:#7c3aed;font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;margin-left:auto;"></span>
+      </div>
+      <div class="inp-wrap">
+        <label class="lbl">Sektor / Branża</label>
+        <select class="inp" id="sectorSel" onchange="onSectorChange()"></select>
+        <div class="sector-hint" id="sectorHint"></div>
+      </div>
+      <div class="form-grid" id="fieldsGrid"></div>
+      <button class="btn-primary" onclick="calculate()">Oblicz Wycenę</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:#a78bfa"></span>Import danych CSV / Excel</div>
+      <div class="drop-zone" id="dropZone"
+        onclick="document.getElementById('fileInput').click()"
+        ondragover="event.preventDefault();this.classList.add('drag')"
+        ondragleave="this.classList.remove('drag')"
+        ondrop="handleDrop(event)">
+        <div class="drop-icon">
+          <svg width="17" height="17" viewBox="0 0 18 18" fill="none">
+            <path d="M9 12V3M9 3L5.5 6.5M9 3L12.5 6.5" stroke="#7c3aed" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M2 15h14" stroke="#7c3aed" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <p style="font-size:13px;font-weight:500;color:#4b5563;margin-bottom:3px;">Przeciągnij plik lub kliknij</p>
+        <p style="font-size:11px;color:#9ca3af;">CSV / XLSX / XLS – dowolny układ kolumn</p>
+        <input type="file" id="fileInput" accept=".csv,.xlsx,.xls,.xlsm,.txt" style="display:none" onchange="handleFile(this.files[0])"/>
+      </div>
+      <div id="fileStatus"></div>
+      <div id="filePreview"></div>
+      <button class="btn-purple" id="aiParseBtn" onclick="aiParse()" style="display:none">AI Parser – wyciągnij dane automatycznie</button>
+      <div id="aiParseHint" style="display:none;font-size:10px;color:#92400e;margin-top:5px;text-align:center;">AI Parser wymaga klucza API</div>
+      <div style="margin-top:8px;padding:7px 10px;background:#faf8ff;border:1px solid #ede9fe;border-radius:8px;display:flex;align-items:flex-start;gap:7px;">
+        <span style="font-size:14px;flex-shrink:0;">💡</span>
+        <p style="font-size:11px;color:#6b7280;line-height:1.6;">Import najlepiej działa po podpięciu <a href="https://console.anthropic.com" target="_blank" style="color:#7c3aed;font-weight:600;text-decoration:none;">Claude API</a>. AI automatycznie rozpozna każdy format arkusza.</p>
+      </div>
+      <div style="background:#f8f7ff;border-radius:8px;padding:10px;margin-top:10px;">
+        <p style="font-size:11px;font-weight:500;color:#374151;margin-bottom:5px;">Szablon CSV:</p>
+        <div class="csv-tpl">revenue | ebitda | growth | wacc | years<br>50 | 12 | 25 | 12 | 5</div>
+        <button class="btn-outline" onclick="downloadTemplate()">Pobierz szablon Excel (.xlsx)</button>
+      </div>
+      <div class="profile-section">
+        <div class="card-title" style="margin-bottom:10px;"><span class="dot" style="background:#e879f9"></span>Profil firmy</div>
+        <div class="inp-wrap">
+          <label class="lbl">Nazwa firmy</label>
+          <input type="text" class="inp" id="coName" placeholder="np. TechCorp Sp. z o.o."/>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:9px;">
+          <div>
+            <label class="lbl">Rok założenia</label>
+            <input type="number" class="inp" id="coFounded" placeholder="2018"/>
+          </div>
+          <div>
+            <label class="lbl">Pracownicy</label>
+            <input type="number" class="inp" id="coEmployees" placeholder="150"/>
+          </div>
+        </div>
+        <div class="inp-wrap">
+          <label class="lbl">Faza rozwoju</label>
+          <select class="inp" id="coStage">
+            <option>Seed / Pre-revenue</option>
+            <option>Series A (1-5M ARR)</option>
+            <option selected>Series B (5-20M ARR)</option>
+            <option>Series C+ (20M+ ARR)</option>
+            <option>Pre-IPO / Growth</option>
+            <option>Dojrzała firma</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div id="resultsArea" class="span-full fi" style="display:none;"></div>
+    <div id="reportArea" class="span-full" style="display:none;"></div>
+  </div>
+  <p style="text-align:center;color:#9ca3af;font-size:11px;padding:12px 0;">
+    TechVal Pro – Metodologia: aventis-advisors.com – Tylko do celów informacyjnych
+  </p>
+</div>
+
+<script>
+const MODELS=[
+  {id:'dcf', label:'DCF Analysis',          short:'DCF'},
+  {id:'comp',label:'Public Comparables',     short:'COMP'},
+  {id:'prec',label:'Precedent Transactions', short:'PREC'},
+  {id:'ev',  label:'EV/EBITDA Multiples',    short:'EV/EBITDA'},
+  {id:'rev', label:'Revenue Multiples',      short:'REV'},
+];
+const MDESC={
+  dcf: {t:'DCF (Discounted Cash Flow)',b:'Wycena przez dyskontowanie przyszłych przepływów pieniężnych. Najdokładniejsza metoda dla firm z przewidywalnymi przychodami.'},
+  comp:{t:'Public Comparables (Comps)',b:'Porównanie do notowanych spółek z tej samej branży. Używa mnożników EV/Revenue i EV/EBITDA.'},
+  prec:{t:'Precedent Transactions',b:'Analiza historycznych transakcji M&A. Uwzględnia premię przejęcia (control premium) typowo 20-40%.'},
+  ev:  {t:'EV/EBITDA Multiples',b:'Wycena przez mnożnik EBITDA. Popularna dla firm w późnych fazach wzrostu. Typowe: 10-25x.'},
+  rev: {t:'Revenue Multiples (EV/Rev)',b:'Wycena przez mnożnik przychodów. Dominuje dla SaaS i firm pre-profitowych. Typowe: 3-15x.'},
+};
+const SECTORS={
+  'SaaS / Cloud':    {r:[6,12], e:[18,30],d:'Wysokie mnożniki: recurring revenue, niski churn, skalowalność.'},
+  'FinTech':         {r:[5,10], e:[15,25],d:'Regulacje wpływają na mnożniki; wysokie bariery wejścia.'},
+  'E-commerce':      {r:[2,5],  e:[8,15], d:'Niższe marże, duże wolumeny. Mnożniki zależą od GMV i retention.'},
+  'HealthTech':      {r:[4,9],  e:[12,22],d:'Długie cykle sprzedaży, wysokie retention i regulatory moat.'},
+  'AI / ML':         {r:[8,20], e:[25,50],d:'Najwyższe mnożniki – premia za przyszły potencjał i IP.'},
+  'Cybersecurity':   {r:[6,14], e:[20,35],d:'Rosnące zapotrzebowanie, wysokie switching costs.'},
+  'Marketplace':     {r:[3,8],  e:[10,20],d:'Efekty sieciowe napędzają premium; take rate kluczowy.'},
+  'EdTech':          {r:[3,7],  e:[8,16], d:'B2B EdTech premium vs B2C; cykliczność i churn wyzwaniem.'},
+  'DeepTech / HW':   {r:[2,5],  e:[6,12], d:'Capex intensywny; IP i patenty jako główne źródło wartości.'},
+};
+const FMODEL={
+  dcf: ['revenue','ebitda','growth','wacc','tgr','years','capex','tax','netDebt'],
+  comp:['revenue','ebitda','customMultiple'],
+  prec:['revenue','ebitda','transactionPremium','netDebt'],
+  ev:  ['ebitda','netDebt'],
+  rev: ['revenue','growth','arr'],
+};
+const FMETA={
+  revenue:           {l:'Przychody (Revenue) $M',     p:'50', t:'Roczny przychód w mln USD'},
+  ebitda:            {l:'EBITDA $M',                   p:'12', t:'Zysk przed odsetkami, podatkami i amortyzacją – wymagane'},
+  fcf:               {l:'Free Cash Flow $M',           p:'8',  t:'FCF = EBITDA minus Capex minus zmiana kapitału obrotowego'},
+  growth:            {l:'Wzrost przychodów YoY (%)',   p:'25', t:'Roczna stopa wzrostu; SaaS benchmark: 30-100%'},
+  wacc:              {l:'WACC (%)',                    p:'12', t:'Ważony koszt kapitału; typowo 8-15% dla tech'},
+  tgr:               {l:'Terminal Growth Rate (%)',    p:'3',  t:'Wzrost długoterminowy; zazwyczaj równa inflacji 2-4%'},
+  years:             {l:'Horyzont projekcji (lata)',   p:'5',  t:'5-10 lat dla startupów; 3-5 dla dojrzałych firm'},
+  capex:             {l:'Capex (% Revenue)',           p:'5',  t:'Nakłady inwest. jako % przychodów. Używane do obliczenia FCF = EBITDA×(1−Tax) − Capex. SaaS: poniżej 5%.'},
+  tax:               {l:'Stawka podatkowa (%)',        p:'19', t:'Efektywna stawka CIT używana do obliczenia FCF. PL: 19%, US: 21%.'},
+  netIncome:         {l:'Net Income $M',               p:'5',  t:'Zysk netto po podatkach'},
+  transactionPremium:{l:'Premia transakcyjna (%)',     p:'30', t:'Typowa premia przejęcia tech: 20-40%'},
+  netDebt:           {l:'Dług netto $M',               p:'0',  t:'Dług minus gotówka. Ujemna = gotówka netto'},
+  arr:               {l:'ARR (Recurring Revenue) $M',   p:'30', t:'Annual Recurring Revenue – kluczowy wskaźnik SaaS'},
+  customMultiple:    {l:'Własny mnożnik (opcjonalnie)', p:'8.5', t:'Wpisz własny mnożnik, aby nadpisać średnią rynkową'},
+  sizeAdjustment:    {l:'Korekta za wielkość (%)',     p:'-20',   t:'Dyskont lub premia wynikająca ze skali firmy względem spółek giełdowych'}
+};
+const ALIASES={
+  revenue:['revenue','przychody','revenues','net revenue','total revenue','obroty'],
+  ebitda:['ebitda','zysk operacyjny','operating profit'],
+  fcf:['fcf','free cash flow'],
+  growth:['growth','wzrost','growth rate','revenue growth'],
+  wacc:['wacc','koszt kapitalu','discount rate'],
+  tgr:['tgr','terminal growth'],
+  years:['years','lata','horyzont'],
+  capex:['capex','naklady','capital expenditure'],
+  tax:['tax','podatek','tax rate','cit'],
+  netIncome:['net income','zysk netto','profit'],
+  transactionPremium:['premium','premia','transaction premium'],
+  netDebt:['net debt','dlug netto'],
+  arr:['arr','annual recurring revenue','mrr'],
+};
+
+let activeModel='dcf', activeSector='SaaS / Cloud';
+let allFields={dcf:{},comp:{},prec:{},ev:{},rev:{}};
+let lastResult=null, xlsxPreview=null, reportMode='standard';
+
+function init(){
+  const row=document.getElementById('tabsRow');
+  MODELS.forEach(m=>{
+    const b=document.createElement('button');
+    b.className='tab-btn'+(m.id===activeModel?' active':'');
+    b.textContent=m.label; b.id='tab_'+m.id;
+    b.onclick=()=>selectModel(m.id);
+    row.appendChild(b);
+  });
+  const sel=document.getElementById('sectorSel');
+  Object.keys(SECTORS).forEach(s=>{
+    const o=document.createElement('option');
+    o.textContent=s; sel.appendChild(o);
+  });
+  sel.value=activeSector;
+  updateTabDesc(); renderFields(); onSectorChange();
+}
+
+function selectModel(id){
+  activeModel=id;
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab_'+id).classList.add('active');
+  updateTabDesc(); renderFields();
+  lastResult=null;
+  document.getElementById('resultsArea').style.display='none';
+  document.getElementById('reportArea').style.display='none';
+}
+
+function updateTabDesc(){
+  const d=MDESC[activeModel];
+  document.getElementById('tabDesc').innerHTML='<b>'+d.t+'</b> <span style="color:#6b7280;margin-left:8px;">'+d.b+'</span>';
+  document.getElementById('modelBadge').textContent=MODELS.find(m=>m.id===activeModel).short;
+}
+
+function onSectorChange(){
+  activeSector=document.getElementById('sectorSel').value;
+  document.getElementById('sectorHint').textContent=SECTORS[activeSector]?.d||'';
+}
+
+function renderFields(){
+  const flds=FMODEL[activeModel]||[];
+  const grid=document.getElementById('fieldsGrid');
+  grid.innerHTML='';
+  const half=Math.ceil(flds.length/2);
+  [flds.slice(0,half),flds.slice(half)].forEach(list=>{
+    const col=document.createElement('div');
+    list.forEach(k=>{
+      const m=FMETA[k]; if(!m) return;
+      const w=document.createElement('div');
+      w.className='inp-wrap';
+      w.innerHTML=`<label class="lbl">${m.l}<span class="tip-wrap"><i class="tip-icon">ⓘ</i><span class="tip-box">${m.t}</span></span></label>
+        <input type="number" class="inp" id="f_${k}" placeholder="${m.p}" value="${allFields[activeModel][k]||''}" oninput="allFields['${activeModel}']['${k}']=this.value"/>`;
+      col.appendChild(w);
+    });
+    grid.appendChild(col);
+  });
+}
+
+function nv(v,d){return parseFloat(v)||d||0;}
+
+function calcDCF(f){
+  // --- required field validation ---
+  if(!f.ebitda||nv(f.ebitda)<=0) return{error:'⚠ EBITDA jest kluczową metryką modelu DCF – wprowadź wartość większą od 0.'};
+  if(!f.wacc||nv(f.wacc)<=0)     return{error:'⚠ WACC jest kluczową metryką modelu DCF – wprowadź stopę dyskontową (typowo 8–15%).'};
+  if(!f.tgr||nv(f.tgr)<0)        return{error:'⚠ Terminal Growth Rate jest kluczową metryką modelu DCF – wprowadź wartość (typowo 2–4%).'};
+  if(!f.growth||nv(f.growth)<=0) return{error:'⚠ Wzrost przychodów jest kluczową metryką modelu DCF – wprowadź roczną stopę wzrostu.'};
+
+  const eb   = nv(f.ebitda);
+  const rev  = nv(f.revenue);
+  const g    = Math.min(nv(f.growth,20)/100, 1.5);
+  const wacc = nv(f.wacc,12)/100;
+  const tgr  = Math.min(nv(f.tgr,3)/100, wacc-0.005);
+  const yr   = Math.max(1, Math.min(parseInt(f.years)||5, 15));
+  const capexPct = nv(f.capex,5)/100;
+  const taxRate  = nv(f.tax,19)/100;
+  const nd = nv(f.netDebt);
+
+  if(wacc<=tgr) return{error:'WACC musi być wyższy niż Terminal Growth Rate'};
+
+  // FCF = EBITDA × (1 – tax) – Capex
+  // Capex w $ = capexPct × Revenue (jeśli podano) lub capexPct × (EBITDA/0.25) jako proxy
+  const revBase = rev>0 ? rev : (eb/0.25);
+  const fc0 = eb*(1-taxRate) - capexPct*revBase;
+  if(fc0<=0) return{error:'FCF wychodzi ujemny przy podanych parametrach – sprawdź Capex i Tax.'};
+
+  // Standard constant-growth DCF
+  const proj=[];let pv=0,cur=fc0;
+  for(let i=1;i<=yr;i++){
+    cur*=(1+g);
+    const d=cur/Math.pow(1+wacc,i);
+    proj.push({year:'Y'+i,fcf:+cur.toFixed(2),pv:+d.toFixed(2)});
+    pv+=d;
+  }
+  const tv=(proj[yr-1].fcf*(1+tgr))/(wacc-tgr);
+  const pvTV=tv/Math.pow(1+wacc,yr);
+  const ev=pv+pvTV;
+
+  // Sensitivity range: WACC ±2pp
+  function evAtWacc(w){
+    let p2=0,c2=fc0;
+    for(let i=1;i<=yr;i++){c2*=(1+g);p2+=c2/Math.pow(1+w,i);}
+    const tv2=(c2*(1+tgr))/(w-tgr);
+    return p2+tv2/Math.pow(1+w,yr);
+  }
+  const wLow =Math.max(wacc-0.02, tgr+0.005);
+  const wHigh=wacc+0.02;
+  const evMin=evAtWacc(wHigh);
+  const evMax=evAtWacc(wLow);
+
+  return{
+    ev:+ev.toFixed(1),
+    evMin:+evMin.toFixed(1),
+    evMax:+evMax.toFixed(1),
+    pvFCF:+pv.toFixed(1),
+    terminalValue:+pvTV.toFixed(1),
+    tvShare:+((pvTV/ev)*100).toFixed(1),
+    proj,
+    method:'DCF',
+    multiple:rev>0?+(ev/rev).toFixed(1):null,
+equityValue:+(ev-nd).toFixed(1)
+  };
+}
+function calcComp(f, sec) {
+  const rev = nv(f.revenue);
+  const eb = nv(f.ebitda);
+  const customM = nv(f.customMultiple);
+  const stage = document.getElementById('coStage').value; // Pobiera fazę z profilu firmy
+
+  if (rev === 0 && eb === 0) {
+    return { error: '⚠ Wprowadź Revenue lub EBITDA.' };
+  }
+
+  const s = SECTORS[sec] || SECTORS['SaaS / Cloud'];
+  
+  // 1. Wybór mnożnika bazowego
+  let baseMultRev = customM > 0 ? customM : (s.r[0] + s.r[1]) / 2;
+  let baseMultEb  = (s.e[0] + s.e[1]) / 2; 
+
+  // 2. Size Factor - Korekta o wielkość firmy
+  let sizeMod = 1.0;
+  if (stage.includes('Seed')) sizeMod = 0.50;      
+  if (stage.includes('Series A')) sizeMod = 0.70;  
+  if (stage.includes('Series B')) sizeMod = 0.85;
+  if (stage.includes('Series C+')) sizeMod = 0.90;
+  if (stage.includes('Pre-IPO')) sizeMod = 1.05;   
+  if (stage.includes('Dojrzała')) sizeMod = 0.95;  
+
+  const ev = rev > 0 ? rev * baseMultRev * sizeMod : eb * baseMultEb * sizeMod;
+
+const evMin = rev > 0 ? rev * s.r[0] : eb * s.e[0];
+const evMax = rev > 0 ? rev * s.r[1] : eb * s.e[1];
+
+  const finalMult = +(baseMultRev * sizeMod).toFixed(1);
+  return {
+    ev: +ev.toFixed(1),
+    evMin: +evMin.toFixed(1),
+    evMax: +evMax.toFixed(1),
+    method: `Public Comps (${stage})`,
+    multiple: finalMult,
+    breakdown: [
+      { n: `Min (${s.r[0]}x)`, v: +evMin.toFixed(1) },
+      { n: `Mid (${finalMult}x)`, v: +ev.toFixed(1) },
+      { n: `Max (${s.r[1]}x)`, v: +evMax.toFixed(1) },
+      { n: `Dyskont fazy (${Math.round((1-sizeMod)*100)}%)`, v: +(ev * sizeMod).toFixed(1) }
+    ]
+  };
+}
+function calcPrec(f,sec){
+  const rev=nv(f.revenue),eb=nv(f.ebitda),pr=nv(f.transactionPremium,30)/100,nd=nv(f.netDebt);
+  const s=SECTORS[sec]||SECTORS['SaaS / Cloud'];
+  if(rev===0&&eb===0) return{error:'⚠ Revenue lub EBITDA są kluczowymi metrykami modelu Precedent Transactions – wprowadź przynajmniej jedną z nich.'};
+  const bR=rev>0?rev*((s.r[0]+s.r[1])/2):0;
+  const bE=eb>0?eb*((s.e[0]+s.e[1])/2):0;
+  const base=bR&&bE?(bR+bE)/2:bR||bE;
+  const ev=base*(1+pr);
+  const prMin=Math.max(0.10,pr-0.10);
+  const prMax=pr+0.10;
+  const equityValue=+(ev-nd).toFixed(1);
+  return{
+    ev:+ev.toFixed(1),
+    evMin:+(base*(1+prMin)).toFixed(1),
+    evMax:+(base*(1+prMax)).toFixed(1),
+    controlPremium:+(base*pr).toFixed(1),
+    baseValue:+base.toFixed(1),
+    equityValue,
+    method:'Precedent Tx',
+    multiple:rev>0?+(base/rev).toFixed(1):+(base/eb).toFixed(1)
+  };
+}
+function calcEV(f,sec){
+  const eb=nv(f.ebitda),nd=nv(f.netDebt);
+  if(eb===0) return{error:'⚠ EBITDA jest kluczową metryką modelu EV/EBITDA – wprowadź wartość większą od 0.'};
+ const s = SECTORS[sec] || SECTORS['SaaS / Cloud'];
+const mid = (s.e[0] + s.e[1]) / 2;
+const ev = eb * mid;
+const evMin = eb * s.e[0];
+const evMax = eb * s.e[1];
+return {
+  ev: +ev.toFixed(1),
+  evMin: +evMin.toFixed(1),
+  evMax: +evMax.toFixed(1),
+  breakdown: [
+    { n: s.e[0] + 'x EBITDA', v: +evMin.toFixed(1) },
+    { n: mid.toFixed(1) + 'x EBITDA', v: +ev.toFixed(1) },
+    { n: s.e[1] + 'x EBITDA', v: +evMax.toFixed(1) }
+  ],
+  method: 'EV/EBITDA',
+  multiple: +mid.toFixed(1),
+  equityValue: +(ev - nd).toFixed(1)   // ← nd odejmowane TYLKO tutaj ✓
+};
+}
+function calcRev(f,sec){
+  const rev=nv(f.revenue),arr=nv(f.arr),base=arr>0?arr:rev;
+  if(base===0) return{error:'⚠ Revenue lub ARR są kluczowymi metrykami modelu Revenue Multiples – wprowadź przynajmniej jedną z nich.'};
+  const s=SECTORS[sec]||SECTORS['SaaS / Cloud'];
+  const mid=(s.r[0]+s.r[1])/2,g=nv(f.growth,20)/100;
+  const adj=g>0.5?1.35:g>0.25?1.18:g>0.1?1.08:1,ev=base*mid*adj;
+  return{ev:+ev.toFixed(1),evMin:+(base*s.r[0]).toFixed(1),evMax:+(base*s.r[1]).toFixed(1),breakdown:[{n:arr>0?'Baza: ARR':'Baza: Revenue',v:+base.toFixed(1)},{n:s.r[0]+'x Rev',v:+(base*s.r[0]).toFixed(1)},{n:mid.toFixed(1)+'x Rev',v:+(base*mid).toFixed(1)},{n:s.r[1]+'x Rev',v:+(base*s.r[1]).toFixed(1)},{n:'Adj. (wzrost)',v:+ev.toFixed(1)}],method:'Revenue Multiple',multiple:+(mid*adj).toFixed(1)};
+}
+
+function calculate(){
+  const f=allFields[activeModel]||{};
+  let res;
+  try{
+    if(activeModel==='dcf') res=calcDCF(f);
+    else if(activeModel==='comp') res=calcComp(f,activeSector);
+    else if(activeModel==='prec') res=calcPrec(f,activeSector);
+    else if(activeModel==='ev') res=calcEV(f,activeSector);
+    else if(activeModel==='rev') res=calcRev(f,activeSector);
+    else res={error:'Nieznany model'};
+  }catch(e){res={error:e.message};}
+  lastResult=res;
+  renderResults(res);
+  document.getElementById('reportArea').style.display='none';
+}
+
+function fmtN(v){
+  if(typeof v!=='number') return v;
+  return v.toLocaleString('pl-PL',{maximumFractionDigits:1});
+}
+
+function renderResults(res){
+  const area=document.getElementById('resultsArea');
+  area.style.display='block';
+  if(res.error){
+    area.innerHTML=`<div class="card" style="border:2px solid #fca5a5;background:#fff7f7;"><p style="color:#dc2626;font-weight:700;font-size:14px;margin-bottom:6px;">Błąd kalkulacji</p><p style="color:#7f1d1d;font-size:13px;line-height:1.7;">${res.error}</p></div>`;
+    return;
+  }
+  const hasKey=!!document.getElementById('apiKey').value.trim();
+  const togHtml=hasKey?`<div class="toggle-group">
+    <button class="btn-toggle" id="togStd" onclick="setRMode('standard')" style="background:${reportMode==='standard'?'#7c3aed':'transparent'};color:${reportMode==='standard'?'white':'#7c3aed'};">Standard</button>
+    <button class="btn-toggle" id="togPrem" onclick="setRMode('premium')" style="background:${reportMode==='premium'?'#7c3aed':'transparent'};color:${reportMode==='premium'?'white':'#7c3aed'};">Premium</button>
+  </div>`:'';
+
+  const stats=[
+    `<div class="stat-card"><div class="stat-label">Enterprise Value (EV)</div><div class="stat-val" style="color:#7c3aed">$${fmtN(res.ev)}M</div><div class="stat-sub">${activeModel==='comp'?'Rynkowy zakres comps:':'Zakres:'} $${fmtN(res.evMin)}M – $${fmtN(res.evMax)}M</div></div>`,
+    res.multiple!=null?`<div class="stat-card"><div class="stat-label">Mnożnik – ${res.method}</div><div class="stat-val" style="color:#7c3aed">${res.multiple}x</div><div class="stat-sub">benchmark sektora</div></div>`:'',
+    res.pvFCF!=null?`<div class="stat-card"><div class="stat-label">PV of FCF</div><div class="stat-val" style="color:#6d28d9">$${fmtN(res.pvFCF)}M</div><div class="stat-sub">zdyskontowane przepływy</div></div>`:'',
+    res.terminalValue!=null?`<div class="stat-card"><div class="stat-label">Terminal Value (PV)</div><div class="stat-val" style="color:#8b5cf6">$${fmtN(res.terminalValue)}M</div><div class="stat-sub">${res.tvShare?res.tvShare+'% wartości EV':''}</div></div>`:'',
+    res.controlPremium !=null?`<div class="stat-card"><div class="stat-label">Premia przejęcia</div><div class="stat-val" style="color:#d97706">$${fmtN(res.controlPremium)}M</div><div class="stat-sub">Baza: $${fmtN(res.baseValue)}M</div></div>`:'',
+    res.equityValue!=null?`<div class="stat-card"><div class="stat-label">Equity Value</div><div class="stat-val" style="color:#059669">$${fmtN(res.equityValue)}M</div><div class="stat-sub">EV minus dług netto</div></div>`:'',
+  ].filter(Boolean).join('');
+
+  area.innerHTML=`<div class="card fi">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px;">
+      <div class="card-title" style="margin-bottom:0;"><span class="dot" style="background:#10b981"></span>Wyniki Wyceny – ${res.method}</div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">${togHtml}
+        <button class="btn-report" id="reportBtn" onclick="generateReport()">Generuj Raport AI${reportMode==='premium'?' Premium':''}</button>
+      </div>
+    </div>
+    <div class="stat-grid">${stats}</div>
+    <div class="chart-wrap">
+      <p class="chart-label">${activeModel==='dcf'?'Projekcja FCF i wartości bieżącej':'Przedział i warianty wyceny'}</p>
+      <canvas id="mainChart"></canvas>
+    </div>
+  </div>`;
+
+  setTimeout(()=>drawChart(res,activeModel),20);
+}
+
+function setRMode(m){
+  reportMode=m;
+  if(lastResult) renderResults(lastResult);
+}
+
+function drawChart(res,model){
+  const canvas=document.getElementById('mainChart');
+  if(!canvas) return;
+  const dpr=window.devicePixelRatio||1;
+  const W=canvas.parentElement.clientWidth-28||560;
+  const H=200;
+  canvas.width=W*dpr; canvas.height=H*dpr;
+  canvas.style.width=W+'px'; canvas.style.height=H+'px';
+  const ctx=canvas.getContext('2d');
+  ctx.scale(dpr,dpr);
+  const pad={top:14,right:16,bottom:34,left:54};
+  const cw=W-pad.left-pad.right,ch=H-pad.top-pad.bottom;
+
+  if(model==='dcf'&&res.proj){
+    const data=res.proj;
+    const series=[{key:'fcf',color:'#7c3aed',label:'FCF Projekcja',fill:true},{key:'pv',color:'#a78bfa',label:'PV zdyskontowane',fill:false,dash:true}];
+    const allV=data.flatMap(d=>series.map(s=>d[s.key]));
+    const maxV=Math.max(...allV)*1.12||1;
+    const xStep=cw/(data.length-1||1);
+    ctx.strokeStyle='#f3f4f6';ctx.lineWidth=1;
+    for(let i=0;i<=4;i++){const y=pad.top+ch-ch/4*i;ctx.beginPath();ctx.setLineDash([3,3]);ctx.moveTo(pad.left,y);ctx.lineTo(pad.left+cw,y);ctx.stroke();}
+    ctx.setLineDash([]);
+    ctx.fillStyle='#9ca3af';ctx.font='10px system-ui';ctx.textAlign='right';
+    for(let i=0;i<=4;i++){const v=maxV/4*i;const y=pad.top+ch-ch/4*i;ctx.fillText(fmtN(Math.round(v)),pad.left-5,y+3);}
+    ctx.textAlign='center';
+    data.forEach((d,i)=>ctx.fillText(d.year,pad.left+i*xStep,H-pad.bottom+14));
+    series.forEach(s=>{
+      const pts=data.map((d,i)=>({x:pad.left+i*xStep,y:pad.top+ch-d[s.key]/maxV*ch}));
+      if(s.fill){ctx.beginPath();ctx.moveTo(pts[0].x,pad.top+ch);pts.forEach(p=>ctx.lineTo(p.x,p.y));ctx.lineTo(pts[pts.length-1].x,pad.top+ch);ctx.closePath();const gr=ctx.createLinearGradient(0,pad.top,0,pad.top+ch);gr.addColorStop(0,s.color+'44');gr.addColorStop(1,s.color+'00');ctx.fillStyle=gr;ctx.fill();}
+      ctx.beginPath();if(s.dash)ctx.setLineDash([4,2]);else ctx.setLineDash([]);
+      ctx.strokeStyle=s.color;ctx.lineWidth=s.fill?2:1.5;
+      pts.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y));ctx.stroke();ctx.setLineDash([]);
+    });
+    let lx=pad.left;
+    series.forEach(s=>{ctx.fillStyle=s.color;ctx.fillRect(lx,H-10,10,3);ctx.fillStyle='#6b7280';ctx.font='10px system-ui';ctx.textAlign='left';ctx.fillText(s.label,lx+13,H-6);lx+=ctx.measureText(s.label).width+30;});
+  } else {
+    const bd=res.breakdown||[{n:'Min',v:res.evMin},{n:'Wycena',v:res.ev},{n:'Max',v:res.evMax}];
+    const maxV=Math.max(...bd.map(d=>d.v))*1.18||1;
+    const gap=cw/bd.length,barW=Math.min(52,gap*0.55);
+    ctx.strokeStyle='#f3f4f6';ctx.lineWidth=1;
+    for(let i=0;i<=4;i++){const y=pad.top+ch-ch/4*i;ctx.beginPath();ctx.setLineDash([3,3]);ctx.moveTo(pad.left,y);ctx.lineTo(pad.left+cw,y);ctx.stroke();}
+    ctx.setLineDash([]);
+    ctx.fillStyle='#9ca3af';ctx.font='10px system-ui';ctx.textAlign='right';
+    for(let i=0;i<=4;i++){const v=maxV/4*i;const y=pad.top+ch-ch/4*i;ctx.fillText(fmtN(Math.round(v)),pad.left-5,y+3);}
+    bd.forEach((d,i)=>{
+      const x=pad.left+gap*i+gap/2-barW/2;
+      const bh=Math.max(2,d.v/maxV*ch),y=pad.top+ch-bh;
+      const isMain=(bd.length===3&&i===1)||(bd.length>3&&i===1);
+      ctx.fillStyle=isMain?'#7c3aed':'#c4b5fd';
+      const r=4;ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+barW-r,y);ctx.quadraticCurveTo(x+barW,y,x+barW,y+r);ctx.lineTo(x+barW,y+bh);ctx.lineTo(x,y+bh);ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath();ctx.fill();
+      ctx.fillStyle='#9ca3af';ctx.font='9px system-ui';ctx.textAlign='center';
+      const lbl=(d.n||d.name||'');ctx.fillText(lbl.length>11?lbl.slice(0,11)+'…':lbl,x+barW/2,H-pad.bottom+13);
+      ctx.fillStyle='#374151';ctx.font='bold 10px system-ui';ctx.fillText('$'+fmtN(d.v)+'M',x+barW/2,y-5);
+    });
+  }
+}
+
+function fuzzy(col){
+  const c=col.toLowerCase().trim().replace(/[\s_\-\/]+/g,' ');
+  for(const [k,aa] of Object.entries(ALIASES)){if(aa.some(a=>c.includes(a)||a.includes(c))) return k;}
+  return null;
+}
+function parseCSV(txt){
+  const lines=txt.trim().split(/\r?\n/).filter(l=>l.trim());
+  if(lines.length<2) return{};
+  const hh=lines[0].split(',').map(h=>h.replace(/"/g,'').trim());
+  const vv=lines[1].split(',').map(v=>v.replace(/"/g,'').trim());
+  const r={};hh.forEach((h,i)=>{const k=fuzzy(h);if(k)r[k]=vv[i];});return r;
+}
+function parseXLSXData(ab){
+  const wb=XLSX.read(ab,{type:'arraybuffer'});
+  const ws=wb.Sheets[wb.SheetNames[0]];
+  const data=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+  if(!data||!data.length) return{raw:[],parsed:{}};
+  const h0=data[0].map(c=>String(c));
+  const hits=h0.filter(h=>fuzzy(h)).length;
+  let parsed={};
+  if(hits>=2&&data.length>=2){const v=data[1];h0.forEach((h,i)=>{const k=fuzzy(h);if(k&&v[i]!=='')parsed[k]=String(v[i]);});}
+  else{data.forEach(row=>{if(row.length>=2){const k=fuzzy(String(row[0]));if(k&&row[1]!=='')parsed[k]=String(row[1]);}});}
+  return{raw:data.slice(0,8).map(r=>r.slice(0,6).map(c=>String(c))),parsed};
+}
+function handleDrop(e){
+  e.preventDefault();document.getElementById('dropZone').classList.remove('drag');handleFile(e.dataTransfer.files[0]);
+}
+async function handleFile(file){
+  if(!file) return;
+  xlsxPreview=null;
+  const nm=file.name.toLowerCase();
+  setFileStatus(null);document.getElementById('filePreview').innerHTML='';
+  document.getElementById('aiParseBtn').style.display='none';
+  document.getElementById('aiParseHint').style.display='none';
+  if(nm.endsWith('.csv')||nm.endsWith('.txt')){
+    const txt=await file.text();const p=parseCSV(txt);const c=Object.keys(p).length;
+    if(c>0){applyFields(p);setFileStatus(true,'CSV: znaleziono '+c+' parametrów.');}
+    else setFileStatus(false,'Nie rozpoznano kolumn. Sprawdź format lub użyj AI Parsera.');
+    return;
+  }
+  if(nm.endsWith('.xlsx')||nm.endsWith('.xls')||nm.endsWith('.xlsm')){
+    const ab=await file.arrayBuffer();
+    const{raw,parsed}=parseXLSXData(ab);
+    xlsxPreview=raw;
+    if(raw.length>0){
+      const prev=document.getElementById('filePreview');
+      prev.innerHTML='<div style="font-size:11px;color:#7c3aed;font-weight:600;margin-bottom:5px;">Podgląd pliku:</div>'+raw.map(row=>'<div style="display:flex;gap:8px;border-bottom:1px solid #ddd6fe;padding-bottom:2px;margin-bottom:2px;">'+row.map(c=>'<span style="min-width:55px;max-width:85px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+c+'</span>').join('')+'</div>').join('');
+      prev.className='preview-box';
+      document.getElementById('aiParseBtn').style.display='block';
+      if(!document.getElementById('apiKey').value) document.getElementById('aiParseHint').style.display='block';
+    }
+    const c=Object.keys(parsed).length;
+    if(c>0){applyFields(parsed);setFileStatus(true,'Excel: znaleziono '+c+' parametrów.');}
+    else setFileStatus(false,'Nie rozpoznano układu. Użyj AI Parsera poniżej.');
+    return;
+  }
+  setFileStatus(false,'Obsługiwane: .csv .xlsx .xls .xlsm');
+}
+function applyFields(p){Object.assign(allFields[activeModel],p);renderFields();}
+function setFileStatus(ok,msg){
+  const el=document.getElementById('fileStatus');
+  if(ok===null){el.innerHTML='';return;}
+  el.innerHTML=`<div class="${ok?'status-ok':'status-err'}">${ok?'✓ ':'⚠ '}${msg}</div>`;
+}
+async function aiParse(){
+  if(!xlsxPreview) return;
+  const key=document.getElementById('apiKey').value.trim().replace(/[^\x20-\x7E]/g,'');
+  if(!key){setFileStatus(false,'Wpisz klucz API w nagłówku.');return;}
+  const btn=document.getElementById('aiParseBtn');btn.textContent='AI analizuje plik...';btn.disabled=true;
+  try{
+    const tbl=xlsxPreview.map(r=>r.join(' | ')).join('\n');
+    const prompt='Jesteś ekspertem finansowym. Poniżej fragment arkusza Excel.\nWyciągnij wartości liczbowe dla parametrów:\nrevenue (mln), ebitda (mln), fcf (mln), growth (% np.25), wacc (% np.12), tgr (% np.3), years (liczba), capex (% np.5), tax (% np.19), netIncome (mln), arr (mln), netDebt (mln), transactionPremium (% np.30).\n\nDane:\n'+tbl+'\n\nZasady: tys./k -> podziel przez 1000, mld -> pomnóż przez 1000.\nZwróć TYLKO JSON bez markdown: {"revenue":50,"ebitda":12}';
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,messages:[{role:'user',content:prompt}]})});
+    const d=await res.json();if(d.error) throw new Error(d.error.message);
+    const p=JSON.parse((d.content?.[0]?.text||'{}').replace(/```[a-z]*/g,'').replace(/```/g,'').trim());
+    const c=Object.keys(p).length;applyFields(p);setFileStatus(true,'AI Parser: wyciągnięto '+c+' parametrów.');
+  }catch(e){setFileStatus(false,'Błąd AI: '+e.message);}
+  btn.textContent='AI Parser – wyciągnij dane automatycznie';btn.disabled=false;
+}
+function downloadTemplate(){
+  const headers=['revenue','ebitda','growth','wacc','tgr','years','capex','tax','netIncome','transactionPremium','netDebt','arr'];
+  const values= [50,      12,      25,      12,    3,    5,      5,     19,   5,           30,                  0,        30];
+  const ws=XLSX.utils.aoa_to_sheet([headers,values]);
+  // column widths
+  ws['!cols']=headers.map(()=>({wch:22}));
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'TechVal');
+  XLSX.writeFile(wb,'techval_template.xlsx');
+}
+async function generateReport(){
+  if(!lastResult||lastResult.error) return;
+  const key=document.getElementById('apiKey').value.trim().replace(/[^\x20-\x7E]/g,'');
+  if(!key){showReport('ERR:Wpisz klucz Anthropic API w nagłówku (sk-ant-...). Kalkulacje działają lokalnie – klucz potrzebny tylko do raportów AI.');return;}
+  const btn=document.getElementById('reportBtn');btn.textContent='Generowanie...';btn.disabled=true;
+  try{
+    const f=allFields[activeModel]||{};
+    const ml=MODELS.find(m=>m.id===activeModel)?.label||activeModel;
+    const fStr=Object.entries(f).filter(([,v])=>v!=='').map(([k,v])=>(FMETA[k]?.l||k)+': '+v).join(', ');
+    const co={name:document.getElementById('coName').value,stage:document.getElementById('coStage').value,employees:document.getElementById('coEmployees').value};
+    const sys=reportMode==='premium'?"Jesteś Senior Partnerem w wiodącym domu M&A. Piszesz raporty na poziomie Goldman Sachs / McKinsey. Styl: precyzyjny, data-driven, z konkretnymi liczbami i benchmarkami. Używaj terminologii: ARR, NRR, LTV/CAC, Rule of 40, Magic Number.":"Jesteś doświadczonym analitykiem M&A. Piszesz rzeczowe raporty wyceny po polsku. Konkretnie, z liczbami.";
+    const evR='$'+lastResult.ev+'M (zakres $'+lastResult.evMin+'M – $'+lastResult.evMax+'M)';
+    const mStr=lastResult.multiple!=null?' | Mnożnik: '+lastResult.multiple+'x':'';
+    const tStr=lastResult.tvShare?' | TV udział: '+lastResult.tvShare+'% EV':'';
+    const pInstr="RAPORT PREMIUM napisz po polsku:\n\n<b>EXECUTIVE SUMMARY</b>\n2-3 zdania: kluczowy wniosek i rekomendacja.\n\n<b>ANALIZA WYCENY</b>\nOceń "+lastResult.ev+"M $ na tle porównywalnych transakcji w sektorze "+activeSector+". Podaj konkretne benchmarki i przykłady transakcji M&A.\n\n<b>PROFIL RYZYKA I SZANSE</b>\n3 czynniki wzrostu wartości. 3 ryzyka z oceną high/medium/low. 1 nieoczywiste ryzyko.\n\n<b>KPI DO MONITOROWANIA</b>\n4-5 wskaźników z wartościami benchmarkowymi.\n\n<b>REKOMENDACJA M&A</b>\nBuy/hold/sell z uzasadnieniem. Przedział do negocjacji. Max 600 słów.";
+    const sInstr="RAPORT STANDARD napisz po polsku z 4 sekcjami:\n\n<b>1. OCENA WYCENY</b>\nOceń $"+lastResult.ev+"M w kontekście sektora "+activeSector+". Fair/zawyżona/zaniżona? Konkretne benchmarki.\n\n<b>2. SILNE STRONY</b>\n3 atuty wpływające pozytywnie na wycenę.\n\n<b>3. RYZYKA</b>\n3 ryzyka finansowe lub rynkowe.\n\n<b>4. REKOMENDACJA</b>\nBuy/hold/sell z uzasadnieniem. Max 380 słów.";
+    const usr="FIRMA: "+(co.name||'Analizowana spółka')+" | Sektor: "+activeSector+" | Faza: "+(co.stage||'N/A')+" | Pracownicy: "+(co.employees||'N/A')+"\nMODEL: "+ml+" | EV: "+evR+mStr+tStr+"\nDANE: "+fStr+"\n\n"+(reportMode==='premium'?pInstr:sInstr);
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:reportMode==='premium'?1400:800,system:sys,messages:[{role:'user',content:usr}]})})
+    const d=await res.json();if(d.error) throw new Error(d.error.message);
+    showReport(d.content?.[0]?.text||'Brak odpowiedzi.');
+  }catch(e){showReport('ERR:Błąd API: '+e.message);}
+  btn.textContent='Generuj Raport AI'+(reportMode==='premium'?' Premium':'');btn.disabled=false;
+}
+function showReport(txt){
+  const area=document.getElementById('reportArea');area.style.display='block';
+  const isErr=txt.startsWith('ERR:');
+  const html=isErr?('<span style="color:#dc2626">'+txt.replace('ERR:','')+'</span>'):txt.replace(/\n/g,'<br/>').replace(/\*\*(.*?)\*\*/g,'<b>$1</b>');
+  area.innerHTML=`<div class="card report-card ${isErr?'err':''} fi">
+    <div class="report-title"><span>${reportMode==='premium'?'Raport Premium – Senior M&A Partner':'Raport AI – Analiza M&A'}</span>
+    <button class="btn-close" onclick="document.getElementById('reportArea').style.display='none'">Zamknij</button></div>
+    <div class="report-body">${html}</div></div>`;
+}
+function toggleKey(){
+  const inp=document.getElementById('apiKey'),btn=document.getElementById('keyToggle');
+  if(inp.type==='password'){inp.type='text';btn.textContent='✕';}else{inp.type='password';btn.textContent='👁';}
+}
+init();
+</script>
+</body>
+</html>
