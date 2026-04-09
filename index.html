@@ -78,6 +78,36 @@ select.inp{cursor:pointer;}
 .report-title{color:#7c3aed;font-size:13px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;}
 .report-body{font-size:13px;line-height:1.9;color:#374151;}
 canvas{display:block;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center;padding:16px;}
+.modal-overlay.open{display:flex;}
+.modal-box{background:white;border-radius:16px;width:100%;max-width:680px;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.3);animation:fadeIn .25s ease;}
+.modal-header{padding:18px 20px 14px;border-bottom:1px solid #ede9fe;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.modal-header-title{color:#7c3aed;font-size:14px;font-weight:700;}
+.modal-header-sub{color:#9ca3af;font-size:11px;margin-top:2px;}
+.modal-stats{display:flex;gap:10px;padding:14px 20px;background:#faf8ff;border-bottom:1px solid #ede9fe;flex-wrap:wrap;flex-shrink:0;}
+.modal-stat{background:white;border:1px solid #ede9fe;border-radius:8px;padding:8px 14px;text-align:center;}
+.modal-stat-label{font-size:10px;color:#9ca3af;margin-bottom:2px;}
+.modal-stat-val{font-size:15px;font-weight:700;color:#7c3aed;}
+.modal-body{padding:20px;overflow-y:auto;font-size:13px;line-height:1.9;color:#374151;flex:1;}
+.modal-footer{padding:12px 20px;border-top:1px solid #f3f4f6;display:flex;justify-content:flex-end;gap:8px;flex-shrink:0;}
+.btn-pdf{background:white;border:1px solid #c4b5fd;color:#7c3aed;border-radius:7px;padding:7px 16px;font-size:12px;font-weight:600;cursor:pointer;}
+.btn-pdf:hover{background:#f5f3ff;}
+.btn-modal-close{background:linear-gradient(135deg,#7c3aed,#5b21b6);border:none;color:white;border-radius:7px;padding:7px 16px;font-size:12px;font-weight:600;cursor:pointer;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center;padding:16px;}
+.modal-overlay.open{display:flex;}
+.modal-box{background:white;border-radius:16px;width:100%;max-width:680px;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.3);animation:fadeIn .25s ease;}
+.modal-header{padding:18px 20px 14px;border-bottom:1px solid #ede9fe;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.modal-header-title{color:#7c3aed;font-size:14px;font-weight:700;}
+.modal-header-sub{color:#9ca3af;font-size:11px;margin-top:2px;}
+.modal-stats{display:flex;gap:10px;padding:14px 20px;background:#faf8ff;border-bottom:1px solid #ede9fe;flex-wrap:wrap;flex-shrink:0;}
+.modal-stat{background:white;border:1px solid #ede9fe;border-radius:8px;padding:8px 14px;text-align:center;}
+.modal-stat-label{font-size:10px;color:#9ca3af;margin-bottom:2px;}
+.modal-stat-val{font-size:15px;font-weight:700;color:#7c3aed;}
+.modal-body{padding:20px;overflow-y:auto;font-size:13px;line-height:1.9;color:#374151;flex:1;}
+.modal-footer{padding:12px 20px;border-top:1px solid #f3f4f6;display:flex;justify-content:flex-end;gap:8px;flex-shrink:0;}
+.btn-pdf{background:white;border:1px solid #c4b5fd;color:#7c3aed;border-radius:7px;padding:7px 16px;font-size:12px;font-weight:600;cursor:pointer;}
+.btn-pdf:hover{background:#f5f3ff;}
+.btn-modal-close{background:linear-gradient(135deg,#7c3aed,#5b21b6);border:none;color:white;border-radius:7px;padding:7px 16px;font-size:12px;font-weight:600;cursor:pointer;}
 </style>
 </head>
 <body>
@@ -92,11 +122,17 @@ canvas{display:block;}
   </div>
   <div class="api-box">
     <div class="api-input-wrap">
-      <span>Claude API Key:</span>
-      <input type="password" id="apiKey" placeholder="sk-ant-..."/>
+      <span>API Key:</span>
+      <input type="password" id="apiKey" placeholder="sk-ant-..." onkeydown="if(event.key==='Enter')connectKey()"/>
       <button onclick="toggleKey()" id="keyToggle">👁</button>
     </div>
-    <a href="https://console.anthropic.com" target="_blank" class="api-link">Uzyskaj klucz</a>
+    <button onclick="connectKey()" id="connectBtn" style="background:#7c3aed;border:none;color:white;border-radius:7px;padding:6px 12px;font-size:11px;font-weight:600;cursor:pointer;">Połącz</button>
+    <span id="keyStatus" style="font-size:11px;display:none;"></span>
+    <div style="display:flex;background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.3);border-radius:8px;overflow:hidden;">
+      <button id="provAnth" onclick="setProvider('anthropic')" style="padding:5px 10px;font-size:11px;font-weight:600;border:none;cursor:pointer;background:#7c3aed;color:white;">Anthropic</button>
+      <button id="provOR" onclick="setProvider('openrouter')" style="padding:5px 10px;font-size:11px;font-weight:600;border:none;cursor:pointer;background:transparent;color:#a78bfa;">OpenRouter</button>
+    </div>
+    <a href="https://console.anthropic.com" target="_blank" class="api-link" id="apiLink">Uzyskaj klucz</a>
   </div>
 </header>
 
@@ -673,9 +709,8 @@ async function aiParse(){
   try{
     const tbl=xlsxPreview.map(r=>r.join(' | ')).join('\n');
     const prompt='Jesteś ekspertem finansowym. Poniżej fragment arkusza Excel.\nWyciągnij wartości liczbowe dla parametrów:\nrevenue (mln), ebitda (mln), fcf (mln), growth (% np.25), wacc (% np.12), tgr (% np.3), years (liczba), capex (% np.5), tax (% np.19), netIncome (mln), arr (mln), netDebt (mln), transactionPremium (% np.30).\n\nDane:\n'+tbl+'\n\nZasady: tys./k -> podziel przez 1000, mld -> pomnóż przez 1000.\nZwróć TYLKO JSON bez markdown: {"revenue":50,"ebitda":12}';
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,messages:[{role:'user',content:prompt}]})});
-    const d=await res.json();if(d.error) throw new Error(d.error.message);
-    const p=JSON.parse((d.content?.[0]?.text||'{}').replace(/```[a-z]*/g,'').replace(/```/g,'').trim());
+    const text = await callAI(key, null, prompt, 600);
+    const p=JSON.parse((text||'{}').replace(/```[a-z]*/g,'').replace(/```/g,'').trim());
     const c=Object.keys(p).length;applyFields(p);setFileStatus(true,'AI Parser: wyciągnięto '+c+' parametrów.');
   }catch(e){setFileStatus(false,'Błąd AI: '+e.message);}
   btn.textContent='AI Parser – wyciągnij dane automatycznie';btn.disabled=false;
@@ -704,29 +739,157 @@ async function generateReport(){
     const evR='$'+lastResult.ev+'M (zakres $'+lastResult.evMin+'M – $'+lastResult.evMax+'M)';
     const mStr=lastResult.multiple!=null?' | Mnożnik: '+lastResult.multiple+'x':'';
     const tStr=lastResult.tvShare?' | TV udział: '+lastResult.tvShare+'% EV':'';
-    const pInstr="RAPORT PREMIUM napisz po polsku:\n\n<b>EXECUTIVE SUMMARY</b>\n2-3 zdania: kluczowy wniosek i rekomendacja.\n\n<b>ANALIZA WYCENY</b>\nOceń "+lastResult.ev+"M $ na tle porównywalnych transakcji w sektorze "+activeSector+". Podaj konkretne benchmarki i przykłady transakcji M&A.\n\n<b>PROFIL RYZYKA I SZANSE</b>\n3 czynniki wzrostu wartości. 3 ryzyka z oceną high/medium/low. 1 nieoczywiste ryzyko.\n\n<b>KPI DO MONITOROWANIA</b>\n4-5 wskaźników z wartościami benchmarkowymi.\n\n<b>REKOMENDACJA M&A</b>\nBuy/hold/sell z uzasadnieniem. Przedział do negocjacji. Max 600 słów.";
-    const sInstr="RAPORT STANDARD napisz po polsku z 4 sekcjami:\n\n<b>1. OCENA WYCENY</b>\nOceń $"+lastResult.ev+"M w kontekście sektora "+activeSector+". Fair/zawyżona/zaniżona? Konkretne benchmarki.\n\n<b>2. SILNE STRONY</b>\n3 atuty wpływające pozytywnie na wycenę.\n\n<b>3. RYZYKA</b>\n3 ryzyka finansowe lub rynkowe.\n\n<b>4. REKOMENDACJA</b>\nBuy/hold/sell z uzasadnieniem. Max 380 słów.";
+    const pInstr="RAPORT PREMIUM napisz po polsku:\n\n## EXECUTIVE SUMMARY\n2-3 zdania: kluczowy wniosek i rekomendacja.\n\n## ANALIZA WYCENY\nOceń "+lastResult.ev+"M $ na tle porównywalnych transakcji w sektorze "+activeSector+". Podaj konkretne benchmarki i przykłady transakcji M&A.\n\n## PROFIL RYZYKA I SZANSE\n3 czynniki wzrostu wartości. 3 ryzyka z oceną high/medium/low. 1 nieoczywiste ryzyko.\n\n## KPI DO MONITOROWANIA\n4-5 wskaźników z wartościami benchmarkowymi.. Max 600 słów.";
+    const sInstr="RAPORT STANDARD napisz po polsku z 4 sekcjami:\n\n## 1. OCENA WYCENY\nOceń $"+lastResult.ev+"M w kontekście sektora "+activeSector+". Fair/zawyżona/zaniżona? Konkretne benchmarki.\n\n## 2. SILNE STRONY\n3 atuty wpływające pozytywnie na wycenę.\n\n## 3. RYZYKA\n3 ryzyka finansowe lub rynkowe. Max 380 słów.";
     const usr="FIRMA: "+(co.name||'Analizowana spółka')+" | Sektor: "+activeSector+" | Faza: "+(co.stage||'N/A')+" | Pracownicy: "+(co.employees||'N/A')+"\nMODEL: "+ml+" | EV: "+evR+mStr+tStr+"\nDANE: "+fStr+"\n\n"+(reportMode==='premium'?pInstr:sInstr);
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:reportMode==='premium'?1400:800,system:sys,messages:[{role:'user',content:usr}]})})
-    const d=await res.json();if(d.error) throw new Error(d.error.message);
-    showReport(d.content?.[0]?.text||'Brak odpowiedzi.');
+    const text = await callAI(key, sys, usr, reportMode==='premium'?1400:1200);
+    showReport(text||'Brak odpowiedzi.');
   }catch(e){showReport('ERR:Błąd API: '+e.message);}
   btn.textContent='Generuj Raport AI'+(reportMode==='premium'?' Premium':'');btn.disabled=false;
 }
+function renderMarkdown(txt){
+  // Collapse 2+ newlines into single paragraph break
+  txt = txt.replace(/\n{3,}/g,'\n\n');
+  // Escape HTML
+  txt = txt.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  // Headers
+  txt = txt.replace(/^#{3} (.+)$/gm,'<h4 style="color:#7c3aed;font-size:13px;font-weight:700;margin:12px 0 4px">$1</h4>');
+  txt = txt.replace(/^#{2} (.+)$/gm,'<h3 style="color:#7c3aed;font-size:14px;font-weight:700;margin:14px 0 6px">$1</h3>');
+  txt = txt.replace(/^# (.+)$/gm,'<h2 style="color:#7c3aed;font-size:15px;font-weight:700;margin:16px 0 8px">$1</h2>');
+  // Bold / italic
+  txt = txt.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  txt = txt.replace(/\*(.+?)\*/g,'<em>$1</em>');
+  // HR
+  txt = txt.replace(/^---+$/gm,'<hr style="border:none;border-top:1px solid #ede9fe;margin:10px 0"/>');
+  // Tables
+  txt = txt.replace(/^\|(.+)\|$/gm, m => {
+    const cells = m.slice(1,-1).split('|');
+    return '<tr>' + cells.map(c => c.trim().match(/^[-:]+$/) ? '' : '<td style="padding:5px 10px;border:1px solid #ede9fe;font-size:12px">'+c.trim()+'</td>').join('') + '</tr>';
+  });
+  txt = txt.replace(/(<tr>[\s\S]*?<\/tr>\n?)+/g, t => '<table style="border-collapse:collapse;width:100%;margin:8px 0">'+t+'</table>');
+  txt = txt.replace(/<tr><\/tr>/g,'');
+  // Double newline = paragraph break, single = space
+  txt = txt.replace(/\n\n/g,'</p><p style="margin:6px 0">');
+  txt = txt.replace(/\n/g,' ');
+  return '<p style="margin:6px 0">'+txt+'</p>';
+}
 function showReport(txt){
-  const area=document.getElementById('reportArea');area.style.display='block';
   const isErr=txt.startsWith('ERR:');
-  const html=isErr?('<span style="color:#dc2626">'+txt.replace('ERR:','')+'</span>'):txt.replace(/\n/g,'<br/>').replace(/\*\*(.*?)\*\*/g,'<b>$1</b>');
-  area.innerHTML=`<div class="card report-card ${isErr?'err':''} fi">
-    <div class="report-title"><span>${reportMode==='premium'?'Raport Premium – Senior M&A Partner':'Raport AI – Analiza M&A'}</span>
-    <button class="btn-close" onclick="document.getElementById('reportArea').style.display='none'">Zamknij</button></div>
-    <div class="report-body">${html}</div></div>`;
+  if(isErr){
+    const area=document.getElementById('reportArea');area.style.display='block';
+    area.innerHTML=`<div class="card report-card err fi"><div class="report-title"><span>Błąd</span><button class="btn-close" onclick="this.closest('.report-card').parentElement.style.display='none'">Zamknij</button></div><div class="report-body"><span style="color:#dc2626">${txt.replace('ERR:','')}</span></div></div>`;
+    return;
+  }
+  const cleaned = txt.replace(/ — /g,', ').replace(/— /g,'').replace(/ —/g,'.');
+  const bodyHtml = renderMarkdown(cleaned);
+  const co = document.getElementById('coName').value||'Analizowana spółka';
+  const ml = MODELS.find(m=>m.id===activeModel)?.label||activeModel;
+  document.getElementById('modalTitle').textContent = reportMode==='premium'?'Raport Premium – Senior M&A Partner':'Raport AI – Analiza M&A';
+  document.getElementById('modalSub').textContent = co+' · '+ml+' · '+activeSector;
+  const stats=[
+    {l:'Enterprise Value',v:'$'+fmtN(lastResult.ev)+'M'},
+    {l:'Zakres EV',v:'$'+fmtN(lastResult.evMin)+'M – $'+fmtN(lastResult.evMax)+'M'},
+    lastResult.multiple!=null?{l:'Mnożnik',v:lastResult.multiple+'x'}:null,
+    lastResult.tvShare!=null?{l:'Terminal Value',v:lastResult.tvShare+'% EV'}:null,
+  ].filter(Boolean);
+  document.getElementById('modalStats').innerHTML=stats.map(s=>`<div class="modal-stat"><div class="modal-stat-label">${s.l}</div><div class="modal-stat-val">${s.v}</div></div>`).join('');
+  document.getElementById('modalBody').innerHTML=bodyHtml;
+  document.getElementById('reportModal').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeModal(){
+  document.getElementById('reportModal').classList.remove('open');
+  document.body.style.overflow='';
+}
+function downloadPDF(){
+  const title=document.getElementById('modalTitle').textContent;
+  const sub=document.getElementById('modalSub').textContent;
+  const stats=document.getElementById('modalStats').innerHTML;
+  const body=document.getElementById('modalBody').innerHTML;
+  const win=window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${title}</title><style>body{font-family:Arial,sans-serif;max-width:700px;margin:40px auto;color:#111;font-size:13px;line-height:1.9;}h1{color:#7c3aed;font-size:18px;margin-bottom:4px;}.sub{color:#999;font-size:11px;margin-bottom:20px;}.stats{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:24px;}.stat{border:1px solid #ede9fe;border-radius:8px;padding:8px 14px;text-align:center;}.stat-label{font-size:10px;color:#999;}.stat-val{font-size:15px;font-weight:700;color:#7c3aed;}.content{border-top:1px solid #ede9fe;padding-top:16px;}h2,h3,h4{color:#7c3aed;}table{border-collapse:collapse;width:100%;margin:10px 0;}td{padding:5px 10px;border:1px solid #ddd;font-size:12px;}hr{border:none;border-top:1px solid #eee;margin:14px 0;}@media print{body{margin:20px;}}</style></head><body><h1>${title}</h1><div class="sub">${sub}</div><div class="stats">${stats}</div><div class="content">${body}</div></body></html>`);
+  win.document.close();
+  setTimeout(()=>win.print(),400);
 }
 function toggleKey(){
   const inp=document.getElementById('apiKey'),btn=document.getElementById('keyToggle');
   if(inp.type==='password'){inp.type='text';btn.textContent='✕';}else{inp.type='password';btn.textContent='👁';}
 }
+let apiProvider = 'anthropic';
+let keyConnected = false;
+function connectKey(){
+  const key = document.getElementById('apiKey').value.trim().replace(/[^\x20-\x7E]/g,'');
+  const status = document.getElementById('keyStatus');
+  const btn = document.getElementById('connectBtn');
+  if(!key){
+    status.style.display='inline';
+    status.style.color='#f87171';
+    status.textContent='⚠ Wklej klucz API';
+    keyConnected = false;
+    return;
+  }
+  keyConnected = true;
+  status.style.display='inline';
+  status.style.color='#34d399';
+  status.textContent='✓ Klucz podpięty';
+  btn.style.background='#059669';
+  btn.textContent='Połączono';
+}
+function setProvider(p){
+  apiProvider = p;
+  document.getElementById('provAnth').style.background = p==='anthropic'?'#7c3aed':'transparent';
+  document.getElementById('provAnth').style.color = p==='anthropic'?'white':'#a78bfa';
+  document.getElementById('provOR').style.background = p==='openrouter'?'#7c3aed':'transparent';
+  document.getElementById('provOR').style.color = p==='openrouter'?'white':'#a78bfa';
+  document.getElementById('apiKey').placeholder = p==='anthropic'?'sk-ant-...':'sk-or-...';
+  document.getElementById('apiLink').href = p==='anthropic'?'https://console.anthropic.com':'https://openrouter.ai/keys';
+  document.getElementById('apiLink').textContent = p==='anthropic'?'Uzyskaj klucz':'Uzyskaj klucz (free)';
+}
+async function callAI(key, systemPrompt, userPrompt, maxTokens){
+  if(apiProvider === 'openrouter'){
+    const res = await fetch('https://openrouter.ai/api/v1/chat/completions',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
+      body:JSON.stringify({
+        model:'openrouter/auto',
+        max_tokens: maxTokens,
+        messages: systemPrompt
+          ? [{role:'system',content:systemPrompt},{role:'user',content:userPrompt}]
+          : [{role:'user',content:userPrompt}]
+      })
+    });
+    const d = await res.json();
+    if(d.error) throw new Error(d.error.message);
+    return d.choices?.[0]?.message?.content || '';
+  } else {
+    const headers = {'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'};
+    const body = {model:'claude-sonnet-4-20250514', max_tokens:maxTokens, messages:[{role:'user',content:userPrompt}]};
+    if(systemPrompt) body.system = systemPrompt;
+    const res = await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers,body:JSON.stringify(body)});
+    const d = await res.json();
+    if(d.error) throw new Error(d.error.message);
+    return d.content?.[0]?.text || '';
+  }
+}
 init();
 </script>
+
+<div class="modal-overlay" id="reportModal" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div>
+        <div class="modal-header-title" id="modalTitle">Raport AI</div>
+        <div class="modal-header-sub" id="modalSub"></div>
+      </div>
+      <button class="btn-close" onclick="closeModal()">✕ Zamknij</button>
+    </div>
+    <div class="modal-stats" id="modalStats"></div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-footer">
+      <button class="btn-pdf" onclick="downloadPDF()">⬇ Pobierz PDF</button>
+      <button class="btn-modal-close" onclick="closeModal()">Zamknij</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
