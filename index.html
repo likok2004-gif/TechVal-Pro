@@ -667,7 +667,7 @@ function setFileStatus(ok,msg){
 }
 async function aiParse(){
   if(!xlsxPreview) return;
-  const key=document.getElementById('apiKey').value.trim();
+  const key=document.getElementById('apiKey').value.trim().replace(/[^\x20-\x7E]/g,'');
   if(!key){setFileStatus(false,'Wpisz klucz API w nagłówku.');return;}
   const btn=document.getElementById('aiParseBtn');btn.textContent='AI analizuje plik...';btn.disabled=true;
   try{
@@ -692,7 +692,7 @@ function downloadTemplate(){
 }
 async function generateReport(){
   if(!lastResult||lastResult.error) return;
-  const key=document.getElementById('apiKey').value.trim();
+  const key=document.getElementById('apiKey').value.trim().replace(/[^\x20-\x7E]/g,'');
   if(!key){showReport('ERR:Wpisz klucz Anthropic API w nagłówku (sk-ant-...). Kalkulacje działają lokalnie – klucz potrzebny tylko do raportów AI.');return;}
   const btn=document.getElementById('reportBtn');btn.textContent='Generowanie...';btn.disabled=true;
   try{
